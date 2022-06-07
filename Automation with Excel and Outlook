@@ -1,0 +1,66 @@
+from pathlib import Path
+from tempfile import gettempdir
+import pandas as pd
+import win32com.client as win32 # pip install pywin32
+import os
+import sys
+
+app_path = os.path.dirname(sys.executable)
+
+EXCEL_FILE_PATH = Path.cwd() / "name of the Excel-File"
+ATTACHMENT_DIR = Path.cwd() / "Directory Name"
+
+ATTACHMENT_DIR.mkdir(exist_ok=True) #// create folder
+
+data = pd.read_excel(EXCEL_FILE_PATH, sheet_name="Sheet1", header=1, engine='openpyxl', usecols="A:H,P,W")
+
+for column in data.columns:
+       data[column] =  data[column].astype(str).str.replace(r'\/', '_')
+       
+column_name = "Costumer"
+unique_values = data[column_name].unique()
+
+for unique_value in unique_values:
+   data_output = data.query(f"{column_name} == @unique_value")
+   output_path = ATTACHMENT_DIR / f"{unique_value}_.xlsx"
+   data_output.to_excel(output_path, sheet_name='LT', index=False, na_rep= 'None')
+   
+   for excel_file in "LT-Files":
+         newname = excel_file.replace('_', '')
+         
+way = ATTACHMENT_DIR
+
+dirs = os.listdir(way)
+
+for file in dirs:
+    file = pd.read_excel(EXCEL_FILE_PATH, sheet_name="Sheet1", header=1, engine='openpyxl', usecols="A:H,P,W") #Establishes the excel file you wish to import into Pandas
+
+#df = file.parse('Sheet1') #Uploads Sheet1 from the Excel file into a dataframe / dont need for the program itself
+
+for index, row in file.iterrows(): #Loops through each row in the dataframe
+    email = (row['E-Mail'])  #Sets dataframe variable, 'email' to cells in column 'Email Addresss'
+    subject = f"Delivery-Time Report for: {row['costumerID']}" #Sets dataframe variable, 'subject' to cells in column 'Subject'
+    body = str(f"""
+                    <b>Good Day</b>,<br><br>
+                    something you want to say, in this example, the date of delivery will be extracted
+                    from the specific row in Excel which containts the date of delivery with the costumer ID {row['costumerID']}.<br><br>
+                    In regards.<br><br>
+                    Firma xyz 
+                    """) #Sets dataframe variable, 'body' to cells in column 'Email HTML Body'
+
+    if (pd.isnull(email)): #Skips over rows where one of the cells in the three main columns is blank
+        continue
+
+    olMailItem = 0x0 #Initiates the mail item object
+    obj = win32.Dispatch("Outlook.Application") #Initiates the Outlook application
+    newMail = obj.CreateItem(olMailItem) #Creates an Outlook mail item
+    newMail.Subject = subject #Sets the mail's subject to the 'subject' variable
+    newMail.HTMLbody = (r"" +
+    body +
+    "") #Sets the mail's body to 'body' variable
+    attachment_path = str(ATTACHMENT_DIR / f"{row['Costumer']}_.xlsx")
+    newMail.Attachments.Add(Source=attachment_path)
+
+    newMail.To = email #Sets the mail's To email address to the 'email' variable
+    newMail.display() #Displays the mail as a draft email
+    #newMail.Send() / sending Mail, better to let it be commented until program is running
