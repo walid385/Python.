@@ -1,0 +1,11 @@
+def fib(n):
+    if n < 1:
+        return 0
+    else:
+        fa = 0
+        fb = 1
+        for i in range (n-1):
+            fa, fb = fb, fa +fb
+            print (fa, fb)
+            
+fib(1)
