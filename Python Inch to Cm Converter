@@ -1,0 +1,3 @@
+inch = float(input("Hi there, let us know which the measure in Inch: "))
+mass = inch * 2.54
+print ("This is:", mass,"cm")
