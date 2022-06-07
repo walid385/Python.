@@ -1,0 +1,52 @@
+import tkinter as tk
+
+calculations = 'Addition'
+
+def callback (selection):
+    global calculations
+    calculations = selection
+
+def calculate ():
+    global calculations
+    val1 = 0 if not entry.get() else float (entry.get())
+    val2 = 0 if not entry2.get() else float (entry2.get())
+
+    if calculations == 'Addition':
+        output.config(text = val1 + val2)
+    elif calculations == 'Subtraktion':
+        output.config(text = val1 - val2)
+    elif calculations == 'Multiplikation':
+        output.config (text = val1 * val2 )
+    elif calculations == 'Division':
+        try:
+            output.config (text = val1 / val2)
+        except ZeroDivisionError:
+             output.config (text = 'Durch 0 ist nicht möglich!')
+
+window = tk.Tk ()
+window.geometry ("750x500")
+window.title ('Taschenrechner')
+
+OptionList = ['Addition', 'Subtraktion', 'Multiplikation', 'Division']
+
+var1 = tk.StringVar(window)
+var1.set (OptionList [0])
+
+entry = tk.Entry(window)
+entry.grid(row=0 , column=1)
+
+entry2 = tk.Entry(window)
+entry2.grid(row=0 , column=2)
+
+button = tk.Button(window, text='Berechnen', command=calculate)
+button.grid(row=0, column=0)
+
+opt = tk.OptionMenu (window, var1, *OptionList, command=callback)
+opt.config(font= ('Arial', 14))
+opt.grid (row=2 , column=0)
+
+output = tk.Label(window)
+output.grid(row=3)
+
+
+window.mainloop()
